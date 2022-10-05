@@ -4,8 +4,7 @@ namespace Tests;
 
 use Codeception\Event\FailEvent;
 use Codeception\Event\TestEvent;
-use Codeception\Test\Cest;
-use Codeception\Test\Unit;
+use Codeception\Test\Test;
 use PHPUnit\Framework\TestCase;
 use Qase\Codeception\RunResultCollection;
 use Qase\PhpClientUtils\ConsoleLogger;
@@ -14,17 +13,6 @@ use Qase\PhpClientUtils\RunResult;
 
 class RunResultCollectionTest extends TestCase
 {
-
-    protected function setUp(): void
-    {
-        // Codeception 4 dependencies fix. Original comment: Compatibility with Symfony 5.
-        if (
-            !class_exists('Symfony\Component\EventDispatcher\Event')
-            && class_exists('Symfony\Contracts\EventDispatcher\Event')
-        ) {
-            class_alias('Symfony\Contracts\EventDispatcher\Event', 'Symfony\Component\EventDispatcher\Event');
-        }
-    }
 
     /**
      * @dataProvider autoCreateDefectDataProvider
@@ -81,14 +69,14 @@ class RunResultCollectionTest extends TestCase
             [
                 'status' => 'failed',
                 'time' => 1.0,
-                'full_test_name' => 'Unit::methodName',
+                'full_test_name' => 'Test::methodName',
                 'stacktrace' => $stackTraceMessage,
                 'defect' => true,
             ],
             [
                 'status' => 'passed',
                 'time' => 0.375,
-                'full_test_name' => 'Unit::methodName',
+                'full_test_name' => 'Test::methodName',
                 'stacktrace' => null,
                 'defect' => false,
             ],
@@ -135,7 +123,7 @@ class RunResultCollectionTest extends TestCase
      */
     private function createTest(?string $className = null)
     {
-        $className = $className ?: Unit::class;
+        $className = $className ?: Test::class;
         $reflectionClass = new \ReflectionClass($className);
         $test = $this->getMockBuilder($className)->setMockClassName($reflectionClass->getShortName())->getMock();
         $test->method('getName')->willReturn('methodName');
@@ -159,7 +147,7 @@ class RunResultCollectionTest extends TestCase
         $test = $this->createTest($className);
         $exception = new \Exception($stackTraceMessage);
         $event = $this->getMockBuilder(FailEvent::class)
-            ->setConstructorArgs([$test, $time, $exception])->getMock();
+            ->setConstructorArgs([$test, $exception, $time])->getMock();
         $event->method('getTest')->willReturn($test);
         $event->method('getTime')->willReturn($time);
         $event->method('getFail')->willReturn($exception);

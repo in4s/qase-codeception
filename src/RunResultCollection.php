@@ -7,7 +7,8 @@ namespace Qase\Codeception;
 use Codeception\Event\FailEvent;
 use Codeception\Event\TestEvent;
 use Codeception\Test\Cest;
-use Codeception\Test\Unit;
+use Codeception\Test\Test;
+use Codeception\Test\TestCaseWrapper;
 use Qase\PhpClientUtils\LoggerInterface;
 use Qase\PhpClientUtils\RunResult;
 
@@ -34,11 +35,16 @@ class RunResultCollection
 
         switch (true) {
             case $test instanceof Cest:
-                $class = get_class($test->getTestClass());
+                $class = get_class($test->getTestInstance());
                 $method = $test->getTestMethod();
                 break;
-            case $test instanceof Unit:
+            case $test instanceof Test:
                 $class = get_class($test);
+                $method = $test->getName();
+                break;
+            case $test instanceof TestCaseWrapper:
+                $testCase = $test->getTestCase();
+                $class = get_class($testCase);
                 $method = $test->getName();
                 break;
             default:
